@@ -5,7 +5,7 @@ class rb_tree:
 
     def __init__(self):
         self.nil = node(0, self.black, None, None, None)
-        self.root = None
+        self.root = self.nil
 
     def get_root(self):
         return self.root
@@ -52,7 +52,57 @@ class rb_tree:
         y.set_right(x)
         x.set_parent(y)
 
-    def add(self, key):
-        if self.root is None:
-            self.root = node(key, self.black, self.nil, self.nil, self.nil)
+    def add_fixup(self, node):
+        while node.get_parent().get_color() == self.red:
+            if node.get_parent() == node.get_parent().get_parent().get_left():
+                y = node.get_parent().get_parent().get_right()
+                if y.get_color() == self.red:
+                    node.get_parent().set_color(self.black)
+                    y.set_color(self.black)
+                    node.get_parent().get_parent().set_color(self.red)
+                    node = node.get_parent().get_parent()
+                elif node == node.get_parent().get_right():
+                    node = node.get_parent()
+                    self.left_rotate(node.get_parent().get_parent())
+                else:
+                    node.get_parent().set_color(self.black)
+                    node.get_parent().get_parent().set_color(self.red)
+                    self.right_rotate(node.get_parent().get_parent())
+            else:
+                y = node.get_parent().get_parent().get_left()
+                if y.get_color() == self.red:
+                    node.get_parent().set_color(self.black)
+                    y.set_color(self.black)
+                    node.get_parent().get_parent().set_color(self.red)
+                    node = node.get_parent().get_parent()
+                elif node == node.get_parent().get_left():
+                    node = node.get_parent()
+                    self.right_rotate(node.get_parent().get_parent())
+                else:
+                    node.get_parent().set_color(self.black)
+                    node.get_parent().get_parent().set_color(self.red)
+                    self.left_rotate(node.get_parent().get_parent())
+        self.get_root().set_color(self.black)
 
+    def add(self, node):
+        y = self.get_nil()
+        x = self.get_root()
+        while x != self.get_nil():
+            y = x
+            if node.get_key() < x.get_key():
+                x = x.get_left()
+            else:
+                x = x.get_right()
+        node.set_parent(y)
+        if y == self.get_nil():
+            self.set_root(node)
+        elif node.get_key() < y.get_key():
+            y.set_left(node)
+        else:
+            y.set_right(node)
+        
+        node.set_left(self.get_nil())
+        node.set_right(self.get_nil())
+        node.set_color(self.red)
+        
+        self.add_fixup(node)
